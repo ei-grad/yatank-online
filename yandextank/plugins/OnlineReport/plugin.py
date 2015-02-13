@@ -1,21 +1,15 @@
 ''' local webserver with online graphs '''
 from threading import Thread
-import logging
-import os.path
-import time
-import socket
-import requests
 
 from yandextank.plugins.Monitoring import MonitoringPlugin
-from yandextank.plugins.Monitoring.collector import MonitoringDataListener
 from yandextank.plugins.Aggregator import AggregatorPlugin, AggregateResultListener
 from yandextank.core import AbstractPlugin
-import yandextank.core as tankcore
 
 from server import ReportServer
 from decode import decode_aggregate, decode_monitoring
 
 from cache import DataCacher
+
 
 class OnlineReportPlugin(AbstractPlugin, Thread, AggregateResultListener):
     '''Interactive report plugin '''
@@ -63,18 +57,15 @@ class OnlineReportPlugin(AbstractPlugin, Thread, AggregateResultListener):
     def start_test(self):
         self.start()
 
-
     def end_test(self, retcode):
         self.log.info("Ended test. Sending command to reload pages.")
         self.server.reload()
         return retcode
 
-
     def run(self):
         if (self.server):
             self.server.serve()
             self.log.info("Server started.")
-
 
     def aggregate_second(self, data):
         data = decode_aggregate(data)
@@ -99,10 +90,10 @@ class OnlineReportPlugin(AbstractPlugin, Thread, AggregateResultListener):
         report_html = self.core.mkstemp(".html", "report_")
         self.core.add_artifact_file(report_html)
         with open(report_html, 'w') as report_html_file:
-           report_html_file.write(
-               #requests.get('http://localhost:8001/offline.html').text
-               self.server.render_offline()
-           )
+            report_html_file.write(
+                #requests.get('http://localhost:8001/offline.html').text
+                self.server.render_offline()
+            )
         #raw_input('Press Enter to stop report server.')
         self.server.stop()
         del self.server
